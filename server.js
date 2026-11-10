@@ -2,15 +2,19 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { connectDB } = require('./src/config/db');
+const { applySecurity } = require('./src/middlewares/security');
+const { errorHandler } = require('./src/middlewares/errorHandler');
+
 const productRoutes = require('./src/routes/products');
 const bagRoutes = require('./src/routes/bag');
 const authRoutes = require('./src/routes/auth');
 const lookRoutes = require('./src/routes/looks');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-app.use(express.json());
+applySecurity(app);
+
 app.get('/', async (req, res, next) => {
   try {
     const fs = require('fs');
@@ -20,19 +24,16 @@ app.get('/', async (req, res, next) => {
     res.type('html').send(tpl.replace('<!--RUNWAY_INNER-->', inner));
   } catch (err) { next(err); }
 });
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/products', productRoutes);
 app.use('/api/bag', bagRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/looks', lookRoutes);
-
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({ error: err.message || 'Server error' });
-});
+app.use(errorHandler);
 
 async function start() {
   await connectDB();
@@ -44,5 +45,4 @@ async function start() {
 }
 
 if (require.main === module) start();
-
 module.exports = app;

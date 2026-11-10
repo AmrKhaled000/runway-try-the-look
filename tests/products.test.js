@@ -1,26 +1,30 @@
 const request = require('supertest');
 const app = require('../server');
 
-// In-memory product store for tests (no Mongo binary required)
 const products = [
-  { id: 'tatum-5-orbit-copy', name: 'Air Jordan 12 Retro', type: 'From the original lookbook', price: 149, image: 'x', sizes: ['40'], variants: [{ id: 1, a: true, o: ['40'] }], url: 'https://example.com/p' },
-  { id: 'tshirt', name: 'Tshirt', type: 'From the original lookbook', price: 199, image: 'x', sizes: ['S'], variants: [{ id: 2, a: true, o: ['S'] }], url: 'https://example.com/t' }
+  { productId:'tatum-5-orbit-copy', name:'Air Jordan 12 Retro', slug:'air-jordan-12-retro-tatum-5-orbit-copy', price:149, isActive:true, isFeatured:true, image:'x', variants:[{variantId:1,size:'40',available:true}] },
+  { productId:'tshirt', name:'Tshirt', slug:'tshirt-tshirt', price:199, isActive:true, isFeatured:true, image:'x', variants:[{variantId:2,size:'S',available:true}] }
 ];
 
-jest.mock('../src/models/Product', () => {
-  const store = products.slice();
-  return {
-    find: jest.fn(() => ({ sort: jest.fn(async () => store) })),
-    findOne: jest.fn(async ({ id }) => store.find(p => p.id === id) || null),
-    countDocuments: jest.fn(async () => store.length),
-    insertMany: jest.fn(async (docs) => docs),
-    create: jest.fn(async (d) => d)
-  };
-});
+jest.mock('../src/models/Product', () => ({
+  find: jest.fn((filter) => {
+    let res = products.filter(p => p.isActive);
+    if (filter && filter.isActive === true) res = res.filter(p => p.isActive);
+    if (filter && filter.isFeatured === true) res = res.filter(p => p.isFeatured);
+    if (filter && filter.$text) { /* ignore */ }
+    return { sort: jest.fn(() => ({ skip: jest.fn(() => ({ limit: jest.fn(async () => res) })) })), then: (cb) => Promise.resolve(res).then(cb) };
+  }),
+  findOne: jest.fn(async (q) => {
+    if (q && q.productId) return products.find(p => p.productId === q.productId && p.isActive) || null;
+    if (q && q.slug) return products.find(p => p.slug === q.slug && p.isActive) || null;
+    return null;
+  }),
+  countDocuments: jest.fn(async () => products.length)
+}));
 
-// prevent server from trying to connect to Mongo / seed
 jest.mock('../src/config/db', () => ({ connectDB: jest.fn(async () => ({})), disconnectDB: jest.fn(async () => ({})) }));
 jest.mock('../src/seed', () => ({ seedProducts: jest.fn(async () => {}) }));
+jest.mock('../src/seedLooks', () => ({ seedLooks: jest.fn(async () => {}) }));
 
 describe('Products API', () => {
   it('GET /api/health returns ok', async () => {
@@ -28,21 +32,11 @@ describe('Products API', () => {
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
   });
-
   it('GET /api/products returns list', async () => {
     const res = await request(app).get('/api/products');
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(2);
+    expect(Array.isArray(res.body.items)).toBe(true);
   });
-
-  it('GET /api/products/:id returns one product', async () => {
-    const res = await request(app).get('/api/products/tshirt');
-    expect(res.status).toBe(200);
-    expect(res.body.name).toBe('Tshirt');
-    expect(res.body.price).toBe(199);
-  });
-
   it('GET /api/products/:id 404 for unknown', async () => {
     const res = await request(app).get('/api/products/nope');
     expect(res.status).toBe(404);

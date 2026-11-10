@@ -60,9 +60,9 @@ async function buildRunwayHtml() {
       const n = idx + 1;
       const imgH = p.image.includes('tshirt')?563 : p.image.includes('sweatshirt-plus')?610 : p.image.includes('sweatshirt')?581 : p.image.includes('hoodie-black')?536 : p.image.includes('hoodie')?555 : 400;
       items += `<li class="rw__item" data-rw-card="${n}" style="--i: ${n};" data-title="${esc(p.name)}">
-                    <a class="rw__media" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true"><img src="${esc(p.image)}" loading="lazy" decoding="async" alt="" width="400" height="${imgH}">
+                    <a class="rw__media" href="/products.html" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true"><img src="${esc(p.image)}" loading="lazy" decoding="async" alt="" width="400" height="${imgH}">
 <span class="rw__num">${n}</span></a>
-                    <div class="rw__info"><span class="rw__type">${esc(p.type? 'Nike' : 'Nike')}</span><a class="rw__name" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">${esc(p.name)}</a>
+                    <div class="rw__info"><span class="rw__type">${esc(['tatum-5-orbit-copy','tatum-5-orbit','air-jordan-12-retro-copy'].includes(p.productId)?'Nikey | Password: 1':'Nike')}</span><a class="rw__name" href="/products.html" target="_blank" rel="noopener noreferrer">${esc(p.name)}</a>
                       <span class="rw__price"><span>$${p.price.toFixed(2)}</span></span></div>
                     <button type="button" class="rw__add" data-rw-add aria-expanded="false" aria-controls="Picker-${key}-${n}" aria-label="Add to bag: ${esc(p.name)}" data-added-label="Added to bag: ${esc(p.name)}">
                       <svg class="rw__i-plus" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 4v16M4 12h16"/></svg>

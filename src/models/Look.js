@@ -7,12 +7,15 @@ const pinSchema = new mongoose.Schema({
 }, { _id: false });
 
 const lookSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  modelImage: { type: String, required: true },
-  originalImage: { type: String, required: true },
+  lookId: { type: String, required: true, unique: true, trim: true },
+  name: { type: String, required: true, trim: true },
   description: { type: String, default: '' },
+  modelImage: { type: String, required: true },
   products: { type: [String], default: [] },
-  pins: { type: [pinSchema], default: [] }
+  pins: { type: [pinSchema], default: [] },
+  isActive: { type: Boolean, default: true }
 }, { timestamps: true });
+
+lookSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model('Look', lookSchema);
