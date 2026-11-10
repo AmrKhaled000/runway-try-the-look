@@ -5,7 +5,7 @@ const Product = require('./models/Product');
 async function seedProducts() {
   const count = await Product.countDocuments();
   if (count > 0) return;
-  const raw = fs.readFileSync(path.join(__dirname, 'data', 'catalog.json'), 'utf8');
+  const raw = fs.readFileSync(path.join(__dirname, 'data', 'catalog.json'), 'utf8').replace(/^\uFEFF/, '');
   const catalog = JSON.parse(raw);
   const docs = catalog.items.map((it) => ({
     id: it.id, name: it.name, type: it.type, price: it.price,

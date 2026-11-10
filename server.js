@@ -4,6 +4,7 @@ const path = require('path');
 const { connectDB } = require('./src/config/db');
 const productRoutes = require('./src/routes/products');
 const bagRoutes = require('./src/routes/bag');
+const authRoutes = require('./src/routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/products', productRoutes);
 app.use('/api/bag', bagRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
